@@ -62,3 +62,63 @@ module.exports.deleteClothingItem = (req, res) => {
       }
     });
 };
+
+module.exports.addClothingItemLike = (req, res) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    {
+      $addToSet: { likes: req.user._id },
+    },
+    { new: true }
+  )
+    .orFail(() => {
+      const error = new Error("Item ID not found");
+      error.name = "MissingItemError";
+      error.statusCode = missingDataError;
+      throw error;
+    })
+    .then((clothingItem) => {
+      res.send({ data: clothingItem });
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "MissingItemError") {
+        return res.status(err.statusCode).send({ message: err.message });
+      } else if (err.name === "CastError") {
+        return res.status(invalidDataError).send({ message: "Invalid ID" });
+      } else {
+        return res
+          .status(defaultServerError)
+          .send("An error has occurred on the server.");
+      }
+    });
+};
+
+module.exports.removeClothingItemLike = (req, res) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail(() => {
+      const error = new Error("Item ID not found");
+      error.name = "MissingItemError";
+      error.statusCode = missingDataError;
+      throw error;
+    })
+    .then((clothingItem) => {
+      res.send({ data: clothingItem });
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "MissingItemError") {
+        return res.status(err.statusCode).send({ message: err.message });
+      } else if (err.name === "CastError") {
+        return res.status(invalidDataError).send({ message: "Invalid ID" });
+      } else {
+        return res
+          .status(defaultServerError)
+          .send("An error has occurred on the server.");
+      }
+    });
+};
