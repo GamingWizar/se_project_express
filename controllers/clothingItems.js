@@ -1,4 +1,4 @@
-const ClothingItem = require("..models/clothingItem");
+const ClothingItem = require("../models/clothingItem");
 
 module.exports.getclothingItems = (req, res) => {
   ClothingItem.find({})
