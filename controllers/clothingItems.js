@@ -12,7 +12,7 @@ module.exports.getclothingItems = (req, res) => {
 
 module.exports.createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
-  ClothingItem.create({ name, weather, imageUrl })
+  ClothingItem.create({ name, weather, imageUrl, owner: req._id })
     .then((clothingItem) => {
       res.send({ data: clothingItem });
     })

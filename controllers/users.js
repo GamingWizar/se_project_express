@@ -2,7 +2,6 @@ const User = require("../models/user");
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .orFail()
     .then((users) => {
       res.send({ data: users });
     })
