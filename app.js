@@ -3,6 +3,11 @@ const mongoose = require("mongoose");
 
 const users = require("./routes/users");
 const clothingItems = require("./routes/clothingItems");
+const {
+  defaultServerError,
+  invalidDataError,
+  missingDataError,
+} = require("./utils/errors");
 
 const app = express();
 
@@ -20,6 +25,12 @@ app.use((req, res, next) => {
 });
 
 app.use("/users", users);
+app.use("/items", clothingItems);
+app.use((req, res) => {
+  res
+    .status(missingDataError)
+    .send({ message: "Requested resource not found" });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
