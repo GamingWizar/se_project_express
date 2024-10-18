@@ -10,8 +10,7 @@ module.exports.getclothingItems = (req, res) => {
     .then((clothingItems) => {
       res.send({ data: clothingItems });
     })
-    .catch((err) => {
-      console.error(err);
+    .catch(() => {
       res
         .status(defaultServerError)
         .send("An error has occurred on the server.");
@@ -25,13 +24,10 @@ module.exports.createClothingItem = (req, res) => {
       res.send({ data: clothingItem });
     })
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(invalidDataError)
-          .send({ message: "Invalid data passed" });
+        res.status(invalidDataError).send({ message: "Invalid data passed" });
       } else {
-        return res
+        res
           .status(defaultServerError)
           .send("An error has occurred on the server.");
       }
@@ -50,13 +46,12 @@ module.exports.deleteClothingItem = (req, res) => {
       res.send({ data: clothingItem });
     })
     .catch((err) => {
-      console.error(err);
       if (err.name === "MissingItemError") {
-        return res.status(err.statusCode).send({ message: err.message });
+        res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === "CastError") {
-        return res.status(invalidDataError).send({ message: "Invalid ID" });
+        res.status(invalidDataError).send({ message: "Invalid ID" });
       } else {
-        return res
+        res
           .status(defaultServerError)
           .send("An error has occurred on the server.");
       }
@@ -81,13 +76,12 @@ module.exports.addClothingItemLike = (req, res) => {
       res.send({ data: clothingItem });
     })
     .catch((err) => {
-      console.error(err);
       if (err.name === "MissingItemError") {
-        return res.status(err.statusCode).send({ message: err.message });
+        res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === "CastError") {
-        return res.status(invalidDataError).send({ message: "Invalid ID" });
+        res.status(invalidDataError).send({ message: "Invalid ID" });
       } else {
-        return res
+        res
           .status(defaultServerError)
           .send("An error has occurred on the server.");
       }
@@ -110,13 +104,12 @@ module.exports.removeClothingItemLike = (req, res) => {
       res.send({ data: clothingItem });
     })
     .catch((err) => {
-      console.error(err);
       if (err.name === "MissingItemError") {
-        return res.status(err.statusCode).send({ message: err.message });
+        res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === "CastError") {
-        return res.status(invalidDataError).send({ message: "Invalid ID" });
+        res.status(invalidDataError).send({ message: "Invalid ID" });
       } else {
-        return res
+        res
           .status(defaultServerError)
           .send("An error has occurred on the server.");
       }

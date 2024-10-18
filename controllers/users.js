@@ -10,8 +10,7 @@ module.exports.getUsers = (req, res) => {
     .then((users) => {
       res.send({ data: users });
     })
-    .catch((err) => {
-      console.error(err);
+    .catch(() => {
       res
         .status(defaultServerError)
         .send("An error has occurred on the server.");
@@ -30,13 +29,12 @@ module.exports.getUserById = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      console.error(err);
       if (err.name === "MissingUserError") {
-        return res.status(err.statusCode).send({ message: err.message });
+        res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === "CastError") {
-        return res.status(invalidDataError).send({ message: "Invalid ID" });
+        res.status(invalidDataError).send({ message: "Invalid ID" });
       } else {
-        return res
+        res
           .status(defaultServerError)
           .send("An error has occurred on the server.");
       }
@@ -50,13 +48,10 @@ module.exports.createUser = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(invalidDataError)
-          .send({ message: "Invalid data passed" });
+        res.status(invalidDataError).send({ message: "Invalid data passed" });
       } else {
-        return res
+        res
           .status(defaultServerError)
           .send("An error has occurred on the server.");
       }
