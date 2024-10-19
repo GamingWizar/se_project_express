@@ -13,7 +13,7 @@ module.exports.getUsers = (req, res) => {
     .catch(() => {
       res
         .status(defaultServerError)
-        .send("An error has occurred on the server.");
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -36,7 +36,7 @@ module.exports.getUserById = (req, res) => {
       } else {
         res
           .status(defaultServerError)
-          .send("An error has occurred on the server.");
+          .send({ message: "An error has occurred on the server." });
       }
     });
 };
@@ -53,7 +53,7 @@ module.exports.createUser = (req, res) => {
       } else {
         res
           .status(defaultServerError)
-          .send("An error has occurred on the server.");
+          .send({ message: "An error has occurred on the server." });
       }
     });
 };

@@ -13,7 +13,7 @@ module.exports.getclothingItems = (req, res) => {
     .catch(() => {
       res
         .status(defaultServerError)
-        .send("An error has occurred on the server.");
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -29,7 +29,7 @@ module.exports.createClothingItem = (req, res) => {
       } else {
         res
           .status(defaultServerError)
-          .send("An error has occurred on the server.");
+          .send({ message: "An error has occurred on the server." });
       }
     });
 };
@@ -53,7 +53,7 @@ module.exports.deleteClothingItem = (req, res) => {
       } else {
         res
           .status(defaultServerError)
-          .send("An error has occurred on the server.");
+          .send({ message: "An error has occurred on the server." });
       }
     });
 };
@@ -83,7 +83,7 @@ module.exports.addClothingItemLike = (req, res) => {
       } else {
         res
           .status(defaultServerError)
-          .send("An error has occurred on the server.");
+          .send({ message: "An error has occurred on the server." });
       }
     });
 };
@@ -111,7 +111,7 @@ module.exports.removeClothingItemLike = (req, res) => {
       } else {
         res
           .status(defaultServerError)
-          .send("An error has occurred on the server.");
+          .send({ message: "An error has occurred on the server." });
       }
     });
 };
