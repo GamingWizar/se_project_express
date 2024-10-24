@@ -1,8 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
-const users = require("./routes/users");
-const clothingItems = require("./routes/clothingItems");
+const routes = require("./routes/index");
 const { missingDataError } = require("./utils/errors");
 
 const app = express();
@@ -12,16 +12,9 @@ const { PORT = 3001 } = process.env;
 mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 
 app.use(express.json());
+app.use(cors());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: "6712a09eff4694809ee22d27",
-  };
-  next();
-});
-
-app.use("/users", users);
-app.use("/items", clothingItems);
+app.use("/", routes);
 app.use((req, res) => {
   res
     .status(missingDataError)

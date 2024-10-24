@@ -35,15 +35,27 @@ module.exports.createClothingItem = (req, res) => {
 };
 
 module.exports.deleteClothingItem = (req, res) => {
-  ClothingItem.findByIdAndRemove(req.params.itemId)
+  ClothingItem.findById(req.params.itemId)
     .orFail(() => {
       const error = new Error("Item ID not found");
       error.name = "MissingItemError";
       error.statusCode = missingDataError;
       throw error;
     })
-    .then((clothingItem) => {
-      res.send({ data: clothingItem });
+    .then((item) => {
+      if (req.user._id === item.owner) {
+        ClothingItem.findByIdAndRemove(req.params.itemId)
+          .then((clothingItem) => {
+            res.send({ data: clothingItem });
+          })
+          .catch(() => {
+            res
+              .status(defaultServerError)
+              .send({ message: "An error has occurred on the server." });
+          });
+      } else {
+        res.status(403).send({ message: "Invalid Permission" });
+      }
     })
     .catch((err) => {
       if (err.name === "MissingItemError") {
