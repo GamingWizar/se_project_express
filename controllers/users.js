@@ -11,42 +11,6 @@ const {
   emailInUseError,
 } = require("../utils/errors");
 
-module.exports.getUsers = (req, res) => {
-  User.find({})
-    .then((users) => {
-      res.send({ data: users });
-    })
-    .catch(() => {
-      res
-        .status(defaultServerError)
-        .send({ message: "An error has occurred on the server." });
-    });
-};
-
-module.exports.getUserById = (req, res) => {
-  User.findById(req.params.userId)
-    .orFail(() => {
-      const error = new Error("User ID not found");
-      error.name = "MissingUserError";
-      error.statusCode = missingDataError;
-      throw error;
-    })
-    .then((user) => {
-      res.send({ data: user });
-    })
-    .catch((err) => {
-      if (err.name === "MissingUserError") {
-        res.status(err.statusCode).send({ message: err.message });
-      } else if (err.name === "CastError") {
-        res.status(invalidDataError).send({ message: "Invalid ID" });
-      } else {
-        res
-          .status(defaultServerError)
-          .send({ message: "An error has occurred on the server." });
-      }
-    });
-};
-
 module.exports.createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
   if (password) {
@@ -85,12 +49,20 @@ module.exports.createUser = (req, res) => {
 
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    return res
+      .status(invalidDataError)
+      .send({ message: "Password and email required" });
+  }
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, jwtKey, { expiresIn: "7d" });
       res.send({ token });
     })
     .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        res.status(invalidAuthorizationError).send({ message: err.message });
+      }
       res.status(invalidDataError).send({ message: err.message });
     });
 };
@@ -136,7 +108,9 @@ module.exports.updateProfile = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === "MissingUserError") {
+      if (err.name === "ValidationError") {
+        res.status(invalidDataError).send({ message: "Invalid data passed" });
+      } else if (err.name === "MissingUserError") {
         res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === "CastError") {
         res.status(invalidDataError).send({ message: "Invalid ID" });
