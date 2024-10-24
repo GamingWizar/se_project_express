@@ -64,7 +64,9 @@ module.exports.login = (req, res) => {
         if (err.message === "Incorrect email or password") {
           res.status(invalidAuthorizationError).send({ message: err.message });
         } else {
-          res.status(invalidDataError).send({ message: err.message });
+          res
+            .status(defaultServerError)
+            .send({ message: "An error has occurred on the server." });
         }
       });
   }
