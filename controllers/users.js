@@ -8,6 +8,7 @@ const {
   defaultServerError,
   invalidDataError,
   missingDataError,
+  emailInUseError,
 } = require("../utils/errors");
 
 module.exports.getUsers = (req, res) => {
@@ -67,7 +68,9 @@ module.exports.createUser = (req, res) => {
               .status(invalidDataError)
               .send({ message: "Invalid data passed" });
           } else if (err.name === "MongoServerError") {
-            res.status(409).send({ message: "Email already in use" });
+            res
+              .status(emailInUseError)
+              .send({ message: "Email already in use" });
           } else {
             res
               .status(defaultServerError)
@@ -88,7 +91,7 @@ module.exports.login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      res.status(400).send({ message: err.message });
+      res.status(invalidDataError).send({ message: err.message });
     });
 };
 

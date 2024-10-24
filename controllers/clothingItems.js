@@ -3,6 +3,7 @@ const {
   defaultServerError,
   invalidDataError,
   missingDataError,
+  invalidPermissionsError,
 } = require("../utils/errors");
 
 module.exports.getclothingItems = (req, res) => {
@@ -43,7 +44,7 @@ module.exports.deleteClothingItem = (req, res) => {
       throw error;
     })
     .then((item) => {
-      if (req.user._id === item.owner) {
+      if (req.user._id === item.owner.toString()) {
         ClothingItem.findByIdAndRemove(req.params.itemId)
           .then((clothingItem) => {
             res.send({ data: clothingItem });
@@ -54,7 +55,9 @@ module.exports.deleteClothingItem = (req, res) => {
               .send({ message: "An error has occurred on the server." });
           });
       } else {
-        res.status(403).send({ message: "Invalid Permission" });
+        res
+          .status(invalidPermissionsError)
+          .send({ message: "Invalid Permission" });
       }
     })
     .catch((err) => {
