@@ -9,6 +9,7 @@ const {
   invalidDataError,
   missingDataError,
   emailInUseError,
+  invalidAuthorizationError,
 } = require("../utils/errors");
 
 module.exports.createUser = (req, res) => {
@@ -50,21 +51,23 @@ module.exports.createUser = (req, res) => {
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res
+    res
       .status(invalidDataError)
       .send({ message: "Password and email required" });
+  } else {
+    User.findUserByCredentials(email, password)
+      .then((user) => {
+        const token = jwt.sign({ _id: user._id }, jwtKey, { expiresIn: "7d" });
+        res.send({ token });
+      })
+      .catch((err) => {
+        if (err.message === "Incorrect email or password") {
+          res.status(invalidAuthorizationError).send({ message: err.message });
+        } else {
+          res.status(invalidDataError).send({ message: err.message });
+        }
+      });
   }
-  User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, jwtKey, { expiresIn: "7d" });
-      res.send({ token });
-    })
-    .catch((err) => {
-      if (err.message === "Incorrect email or password") {
-        res.status(invalidAuthorizationError).send({ message: err.message });
-      }
-      res.status(invalidDataError).send({ message: err.message });
-    });
 };
 
 module.exports.getCurrentUser = (req, res) => {
