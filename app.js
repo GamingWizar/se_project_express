@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors } = require("celebrate");
 
 const routes = require("./routes/index");
 const errorHandler = require("./middlewares/errorHandler");
@@ -21,6 +22,8 @@ app.use((req, res) => {
     .status(missingDataError)
     .send({ message: "Requested resource not found" });
 });
+
+app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {});
