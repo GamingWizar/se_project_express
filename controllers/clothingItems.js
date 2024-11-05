@@ -64,7 +64,7 @@ module.exports.addClothingItemLike = (req, res, next) => {
     { new: true }
   )
     .orFail(() => {
-      throw new BadRequestError("Item ID not found");
+      throw new NotFoundError("Item ID not found");
     })
     .then((clothingItem) => {
       res.send({ data: clothingItem });
@@ -85,7 +85,7 @@ module.exports.removeClothingItemLike = (req, res, next) => {
     { new: true }
   )
     .orFail(() => {
-      throw new BadRequestError("Item ID not found");
+      throw new NotFoundError("Item ID not found");
     })
     .then((clothingItem) => {
       res.send({ data: clothingItem });
