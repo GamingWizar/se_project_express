@@ -5,14 +5,12 @@ const { jwtKey } = require("../utils/config");
 const User = require("../models/user");
 
 const {
-  defaultServerError,
-  invalidDataError,
-  missingDataError,
-  emailInUseError,
-  invalidAuthorizationError,
+  BadRequestError,
+  NotFoundError,
+  ConflictError,
 } = require("../utils/errors");
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
   if (password) {
     bcyrpt.hash(password, 10).then((hash) => {
@@ -29,74 +27,51 @@ module.exports.createUser = (req, res) => {
         })
         .catch((err) => {
           if (err.name === "ValidationError") {
-            res
-              .status(invalidDataError)
-              .send({ message: "Invalid data passed" });
+            next(new BadRequestError("Invalid data passed"));
           } else if (err.name === "MongoServerError") {
-            res
-              .status(emailInUseError)
-              .send({ message: "Email already in use" });
+            next(new ConflictError("Email already in use"));
           } else {
-            res
-              .status(defaultServerError)
-              .send({ message: "An error has occurred on the server." });
+            next(err);
           }
         });
     });
   } else {
-    res.status(invalidDataError).send({ message: "Invalid data passed" });
+    next(new BadRequestError("Invalid data passed"));
   }
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res
-      .status(invalidDataError)
-      .send({ message: "Password and email required" });
+    next(new BadRequestError("Password and email required"));
   } else {
     User.findUserByCredentials(email, password)
       .then((user) => {
         const token = jwt.sign({ _id: user._id }, jwtKey, { expiresIn: "7d" });
         res.send({ token });
       })
-      .catch((err) => {
-        if (err.message === "Incorrect email or password") {
-          res.status(invalidAuthorizationError).send({ message: err.message });
-        } else {
-          res
-            .status(defaultServerError)
-            .send({ message: "An error has occurred on the server." });
-        }
-      });
+      .catch(next);
   }
 };
 
-module.exports.getCurrentUser = (req, res) => {
+module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user)
     .orFail(() => {
-      const error = new Error("User ID not found");
-      error.name = "MissingUserError";
-      error.statusCode = missingDataError;
-      throw error;
+      throw new NotFoundError("User ID not found");
     })
     .then((user) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === "MissingUserError") {
-        res.status(err.statusCode).send({ message: err.message });
-      } else if (err.name === "CastError") {
-        res.status(invalidDataError).send({ message: "Invalid ID" });
+      if (err.name === "CastError") {
+        next(new BadRequestError("Invalid ID"));
       } else {
-        res
-          .status(defaultServerError)
-          .send({ message: "An error has occurred on the server." });
+        next(err);
       }
     });
 };
 
-module.exports.updateProfile = (req, res) => {
+module.exports.updateProfile = (req, res, next) => {
   const { name, avatar } = req.body;
   User.findByIdAndUpdate(
     req.user,
@@ -104,25 +79,18 @@ module.exports.updateProfile = (req, res) => {
     { new: true, runValidators: true }
   )
     .orFail(() => {
-      const error = new Error("User ID not found");
-      error.name = "MissingUserError";
-      error.statusCode = missingDataError;
-      throw error;
+      throw new NotFoundError("User ID not found");
     })
     .then((user) => {
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(invalidDataError).send({ message: "Invalid data passed" });
-      } else if (err.name === "MissingUserError") {
-        res.status(err.statusCode).send({ message: err.message });
+        next(new BadRequestError("Invalid data passed"));
       } else if (err.name === "CastError") {
-        res.status(invalidDataError).send({ message: "Invalid ID" });
+        next(new BadRequestError("Invalid ID"));
       } else {
-        res
-          .status(defaultServerError)
-          .send({ message: "An error has occurred on the server." });
+        next(err);
       }
     });
 };

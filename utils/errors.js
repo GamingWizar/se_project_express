@@ -1,8 +1,13 @@
+const BadRequestError = require("./customErrors/BadRequestError");
+const UnauthorizedError = require("./customErrors/UnauthorizedError");
+const ForbiddenError = require("./customErrors/ForbiddenError");
+const NotFoundError = require("./customErrors/NotFoundError");
+const ConflictError = require("./customErrors/ConflictError");
+
 module.exports = {
-  defaultServerError: 500,
-  invalidDataError: 400,
-  invalidAuthorizationError: 401,
-  invalidPermissionsError: 403,
-  missingDataError: 404,
-  emailInUseError: 409,
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
 };

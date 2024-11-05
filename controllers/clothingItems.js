@@ -1,24 +1,19 @@
 const ClothingItem = require("../models/clothingItem");
 const {
-  defaultServerError,
-  invalidDataError,
-  missingDataError,
-  invalidPermissionsError,
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
 } = require("../utils/errors");
 
-module.exports.getclothingItems = (req, res) => {
+module.exports.getclothingItems = (req, res, next) => {
   ClothingItem.find({})
     .then((clothingItems) => {
       res.send({ data: clothingItems });
     })
-    .catch(() => {
-      res
-        .status(defaultServerError)
-        .send({ message: "An error has occurred on the server." });
-    });
+    .catch(next);
 };
 
-module.exports.createClothingItem = (req, res) => {
+module.exports.createClothingItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((clothingItem) => {
@@ -26,22 +21,17 @@ module.exports.createClothingItem = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(invalidDataError).send({ message: "Invalid data passed" });
+        next(new BadRequestError("Invalid data passed"));
       } else {
-        res
-          .status(defaultServerError)
-          .send({ message: "An error has occurred on the server." });
+        next(err);
       }
     });
 };
 
-module.exports.deleteClothingItem = (req, res) => {
+module.exports.deleteClothingItem = (req, res, next) => {
   ClothingItem.findById(req.params.itemId)
     .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.name = "MissingItemError";
-      error.statusCode = missingDataError;
-      throw error;
+      throw new NotFoundError("Item ID not found");
     })
     .then((item) => {
       if (req.user._id === item.owner.toString()) {
@@ -49,31 +39,23 @@ module.exports.deleteClothingItem = (req, res) => {
           .then((clothingItem) => {
             res.send({ data: clothingItem });
           })
-          .catch(() => {
-            res
-              .status(defaultServerError)
-              .send({ message: "An error has occurred on the server." });
+          .catch((err) => {
+            next(err);
           });
       } else {
-        res
-          .status(invalidPermissionsError)
-          .send({ message: "Invalid Permission" });
+        throw new ForbiddenError("Invalid Permission");
       }
     })
     .catch((err) => {
-      if (err.name === "MissingItemError") {
-        res.status(err.statusCode).send({ message: err.message });
-      } else if (err.name === "CastError") {
-        res.status(invalidDataError).send({ message: "Invalid ID" });
+      if (err.name === "CastError") {
+        next(new BadRequestError("Invalid ID"));
       } else {
-        res
-          .status(defaultServerError)
-          .send({ message: "An error has occurred on the server." });
+        next(err);
       }
     });
 };
 
-module.exports.addClothingItemLike = (req, res) => {
+module.exports.addClothingItemLike = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     {
@@ -82,51 +64,37 @@ module.exports.addClothingItemLike = (req, res) => {
     { new: true }
   )
     .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.name = "MissingItemError";
-      error.statusCode = missingDataError;
-      throw error;
+      throw new BadRequestError("Item ID not found");
     })
     .then((clothingItem) => {
       res.send({ data: clothingItem });
     })
     .catch((err) => {
-      if (err.name === "MissingItemError") {
-        res.status(err.statusCode).send({ message: err.message });
-      } else if (err.name === "CastError") {
-        res.status(invalidDataError).send({ message: "Invalid ID" });
+      if (err.name === "CastError") {
+        next(new BadRequestError("Invalid ID"));
       } else {
-        res
-          .status(defaultServerError)
-          .send({ message: "An error has occurred on the server." });
+        next(err);
       }
     });
 };
 
-module.exports.removeClothingItemLike = (req, res) => {
+module.exports.removeClothingItemLike = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
     { new: true }
   )
     .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.name = "MissingItemError";
-      error.statusCode = missingDataError;
-      throw error;
+      throw new BadRequestError("Item ID not found");
     })
     .then((clothingItem) => {
       res.send({ data: clothingItem });
     })
     .catch((err) => {
-      if (err.name === "MissingItemError") {
-        res.status(err.statusCode).send({ message: err.message });
-      } else if (err.name === "CastError") {
-        res.status(invalidDataError).send({ message: "Invalid ID" });
+      if (err.name === "CastError") {
+        next(new BadRequestError("Invalid ID"));
       } else {
-        res
-          .status(defaultServerError)
-          .send({ message: "An error has occurred on the server." });
+        next(err);
       }
     });
 };
