@@ -5,7 +5,8 @@ const { errors } = require("celebrate");
 
 const routes = require("./routes/index");
 const errorHandler = require("./middlewares/errorHandler");
-const { missingDataError } = require("./utils/errors");
+const { NotFoundError } = require("./utils/errors");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 const app = express();
 
@@ -16,12 +17,14 @@ mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 app.use(express.json());
 app.use(cors());
 
+app.use(requestLogger);
 app.use("/", routes);
 app.use((req, res) => {
-  res
-    .status(missingDataError)
-    .send({ message: "Requested resource not found" });
+  const noResource = new NotFoundError("Requested resource not found");
+  res.status(noResource.statusCode).send({ message: noResource.message });
 });
+
+app.use(errorLogger);
 
 app.use(errors());
 app.use(errorHandler);
