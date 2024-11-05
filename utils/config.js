@@ -1,5 +1,5 @@
-const jwtKey = "GamingWizar";
+const { JWT_SECRET = "Azir" } = process.env;
 
 module.exports = {
-  jwtKey,
+  jwtKey: JWT_SECRET,
 };
