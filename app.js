@@ -25,9 +25,8 @@ app.get("/crash-test", () => {
 app.use(requestLogger);
 
 app.use("/", routes);
-app.use((req, res) => {
-  const noResource = new NotFoundError("Requested resource not found");
-  res.status(noResource.statusCode).send({ message: noResource.message });
+app.use((req, res, next) => {
+  next(new NotFoundError("Requested resource not found"));
 });
 
 app.use(errorLogger);

@@ -15,3 +15,7 @@ This is the back end portion of the forth project of the Web Development program
 ## Domain Name
 
 api.wtwr.spoggi.com
+
+## Plan on improving the project
+
+- create tests to improve bug fixing when adding new features
